@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@oppgaveretter/protocol": "*",
+    "typescript": "^5.7.0",
     "ws": "^8.18.0"
   }
 }
