@@ -3,27 +3,33 @@
 Et system som tar imot en innsendt oppgaveløsning, validerer den mot en kjent
 testfil, og streamer tilbakemelding til deltakeren i sanntid over WebSocket.
 
-Denne versjonen dekker **deterministiske JS/TS-oppgaver**: klienten sender en
-løsningsfil, serveren slår opp riktig oppgave fra filnavnet, kjører oppgavens
-testfil mot innsendt kode i en isolert child-prosess (Vitest), og sender hvert
-assertion-resultat etterfulgt av en sluttrapport markert korrekt/ukorrekt.
+Denne versjonen dekker **deterministiske JS/TS- og C#-oppgaver**: klienten sender
+en løsningsfil, serveren slår opp riktig oppgave fra filnavnet, kjører oppgavens
+testfil mot innsendt kode i en isolert child-prosess (Vitest for JS/TS, `dotnet`
++ xUnit for C#), og sender hvert assertion-resultat etterfulgt av en sluttrapport
+markert korrekt/ukorrekt.
 
 Arkitekturen er bevisst språknøytral: kjørelogikken ligger bak en `Runner`-
-abstraksjon og en runtime-nøytral protokoll, slik at flere språk senere kan få
-egne runtime-servere bak en nginx-router uten å endre klient eller protokoll.
+abstraksjon og en runtime-nøytral protokoll. Et nytt språk legges til som en ny
+`Runner` i serveren — klienten og protokollen er uendret. På sikt kan hvert språk
+få sin egen runtime-server bak en nginx-router uten å endre klient eller protokoll.
 
 ## Arkitektur
 
 ```
-  CLI ──► CLI-klient ◄──── WebSocket (runtime-nøytral protokoll) ────► JS/TS-server
+  CLI ──► CLI-klient ◄──── WebSocket (runtime-nøytral protokoll) ────► runtime-server
                                                                         ├─ AssignmentRegistry
-                                                                        └─ Runner (JS/TS)
-                                                                           └─ child process → Vitest → NDJSON-stream
+                                                                        └─ Runner (velges per språk)
+                                                                           ├─ JS/TS → child process → Vitest        → NDJSON-stream
+                                                                           └─ C#    → child process → dotnet + xUnit → NDJSON-stream
 ```
+
+Serveren velger runner ut fra `language` i innsendingen (`runners.find(r => r.supports(language))`).
 
 ## Krav
 
 - Node.js 22+
+- .NET 10+ SDK — kun nødvendig for C#-oppgaver
 
 ## Kom i gang
 
@@ -38,10 +44,12 @@ I et eget terminalvindu:
 npm run dev:cli -- <fil> [--assignment <id>] [--server ws://host:port]
 ```
 
-Filnavnet (uten extension) avgjør hvilken oppgave som valideres. Eksempel:
+Filnavnet (uten extension) avgjør hvilken oppgave som valideres, og extension
+avgjør språk (`.ts`/`.js` → JS/TS, `.cs`/`.csx` → C#). Eksempler:
 
 ```bash
-npm run dev:cli -- ./arraysAndArrayMethods.ts
+npm run dev:cli -- ./arraysAndArrayMethods.ts   # JS/TS
+npm run dev:cli -- ./csharpArrays.cs            # C#
 ```
 
 CLI-en skriver ✓/✗ per assertion og en sluttrapport, og avslutter med
@@ -52,9 +60,11 @@ exit-kode 0 hvis løsningen er korrekt, ellers 1.
 ```
 packages/
   protocol/    delt, runtime-nøytral WebSocket-kontrakt (typer + meldinger)
-  server/      JS/TS-runtime-server: registry, Runner, sandbox, ws-håndtering
+  server/      runtime-server: registry, Runner-er (JS/TS + C#), sandbox, ws-håndtering
+    src/runner/JsTsRunner.ts + vitestEntry.ts   JS/TS via Vitest
+    src/runner/CSharpRunner.ts + csharpSandbox.ts + csharp-template/   C# via dotnet + xUnit
   cli/         submitSolution()-bibliotek + tynn CLI-wrapper
-features/      Gherkin-akseptansetester (Cucumber): de kjørbare scenarioene
+features/      Gherkin-akseptansetester (Cucumber): de kjørbare scenarioene (@csharp gates C#)
 assignments/   kjente oppgaver, én mappe per oppgave (assignment.json + testfil)
 ```
 
@@ -63,10 +73,46 @@ assignments/   kjente oppgaver, én mappe per oppgave (assignment.json + testfil
 Lag en mappe under `assignments/<id>/` med:
 
 - `assignment.json`: `{ id, displayName, language, entry, testFile }`
-- en testfil som importerer løsningen via `entry` (f.eks. `./submission`)
+- en testfil som validerer løsningen
 
-Deltakerens innsending skrives til `<entry>.{ts|js}` i sandbox-mappa før testene
-kjøres, så testfilen kan importere den extension-løst.
+**JS/TS:** `language: "ts"` (eller `"js"`). Testfilen importerer løsningen via
+`entry` (f.eks. `./submission`). Deltakerens innsending skrives til
+`<entry>.{ts|js}` i sandbox-mappa, så testfilen kan importere den extension-løst.
+Innsendingen normaliseres først: `export` settes automatisk inn foran top-level
+deklarasjoner som mangler det (se `normalizeExports.ts`), så nybegynnere slipper
+å huske `export`.
+
+**C#:** `language: "cs"`, `entry` blir filnavnet innsendingen skrives til (f.eks.
+`Submission`), og `testFile` er en xUnit-testfil (f.eks. `Tests.cs`). Sandboxen
+kompilerer innsendingen + testfilen + en NDJSON-harness til ett `dotnet`-prosjekt
+og kjører `[Fact]`-testene. Testfilen refererer typer ved navn, så oppgaven må
+definere kontrakten den forventer, f.eks.:
+
+```csharp
+// Submission.cs som deltakeren skal skrive
+public static class Solution
+{
+    public static int[] DoubleAll(int[] xs) => xs.Select(x => x * 2).ToArray();
+}
+```
+
+## Språkstøtte og begrensninger
+
+| Språk | Runtime | Testrammeverk | Status |
+| ----- | ------- | ------------- | ------ |
+| JS/TS | Node + Vitest (child process) | Vitest | full støtte |
+| C#    | .NET 10+ (`dotnet`, child process) | xUnit | kun script-filer |
+
+Kjente C#-begrensninger (planlagt):
+
+- **Ingen normalisering:** JS/TS får `export` automatisk; C# har ingen tilsvarende
+  normalisering ennå. Innsendingen må selv definere den `public` kontrakten
+  testfilen refererer (ingen auto-`public`/wrapping), og kan **ikke** bruke
+  top-level statements (de kolliderer med harnessens egen entry-point).
+- **Kun `[Fact]`:** parameterløse `[Fact]`-tester kjøres. `[Theory]`/`[InlineData]`
+  oppdages ikke ennå.
+- **Kun enkeltfiler:** komplette flerfils-prosjekter støttes ikke ennå (protokollen
+  bærer én `content`-streng i dag).
 
 ## Testing
 
@@ -88,8 +134,10 @@ innsending) er et naturlig neste steg.
 
 ## Utenfor scope (planlagt senere)
 
+- C#-normalisering (auto-`public`/wrapping) og `[Theory]`-støtte
+- Komplette flerfils-prosjekter (krever protokollutvidelse utover én `content`-streng)
 - AI-basert vurdering av ikke-deterministiske oppgaver (prosjektstruktur/designdokument)
-- nginx-router + flere runtime-servere (f.eks. C#)
+- nginx-router + flere dedikerte runtime-servere (C#-runneren er broen dit)
 - Sterkere sandboxing, autentisering og persistert historikk
 
 Se `design_docs.md` for fullstendig design.
