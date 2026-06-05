@@ -1,0 +1,26 @@
+{
+  "name": "assignment-corrector",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:server": "tsx packages/server/src/index.ts",
+    "dev:cli": "tsx packages/cli/src/index.ts",
+    "test": "vitest run",
+    "bdd": "NODE_OPTIONS='--import tsx' cucumber-js",
+    "verify": "npm run bdd && npm run test"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^13.0.0",
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.0"
+  }
+}

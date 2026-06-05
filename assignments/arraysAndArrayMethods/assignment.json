@@ -1,0 +1,7 @@
+{
+  "id": "arraysAndArrayMethods",
+  "displayName": "Arrays and Array Methods",
+  "language": "ts",
+  "entry": "submission",
+  "testFile": "arraysAndArrayMethods.test.ts"
+}
