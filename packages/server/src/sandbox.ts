@@ -1,6 +1,7 @@
 import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Assignment } from "./registry.js";
+import { ensureExportedFunctions } from "./normalizeExports.js";
 import type { Language } from "@oppgaveretter/protocol";
 
 export interface Sandbox {
@@ -24,7 +25,11 @@ export async function createSandbox(
 
   const ext = input.language === "ts" ? "ts" : "js";
   const submissionPath = path.join(dir, `${input.assignment.entry}.${ext}`);
-  await writeFile(submissionPath, input.content, "utf8");
+  await writeFile(
+    submissionPath,
+    ensureExportedFunctions(input.content),
+    "utf8",
+  );
 
   const testDest = path.join(dir, input.assignment.testFile);
   await copyFile(input.assignment.testFilePath, testDest);
