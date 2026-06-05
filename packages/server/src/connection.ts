@@ -5,7 +5,8 @@ import type { Runner } from "./runner/Runner.js";
 
 export interface ConnectionDeps {
   registry: AssignmentRegistry;
-  runner: Runner;
+  /** Runtime-runnere; den første som `supports(language)` velges per innsending. */
+  runners: Runner[];
 }
 
 /** Kobler én WebSocket-klient til validerings-flyten. */
@@ -26,7 +27,7 @@ export function handleConnection(ws: WebSocket, deps: ConnectionDeps): void {
 
 async function handleSubmit(
   ws: WebSocket,
-  { registry, runner }: ConnectionDeps,
+  { registry, runners }: ConnectionDeps,
   msg: SubmitMessage,
 ): Promise<void> {
   const assignment = registry.resolve(msg.assignment || msg.filename);
@@ -34,7 +35,8 @@ async function handleSubmit(
     send(ws, { type: "rejected", reason: `Ukjent oppgave: ${msg.filename}` });
     return;
   }
-  if (!runner.supports(msg.language)) {
+  const runner = runners.find((r) => r.supports(msg.language));
+  if (!runner) {
     send(ws, { type: "rejected", reason: `Språk støttes ikke: ${msg.language}` });
     return;
   }

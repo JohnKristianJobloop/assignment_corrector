@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Mal for sandbox-prosjektet. CSharpRunner kopierer denne + Harness.cs inn i en
+    temp-mappe sammen med deltakerens Submission.cs og oppgavens Tests.cs, og
+    kjører `dotnet run`. Kun `xunit` trengs (assertions + [Fact]) — VSTest/
+    test-sdk er bevisst utelatt; vi driver kjøringen selv i Harness.cs.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>submissionrun</AssemblyName>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.9.2" />
+  </ItemGroup>
+
+</Project>

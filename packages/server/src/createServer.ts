@@ -3,12 +3,16 @@ import type { AddressInfo } from "node:net";
 import { AssignmentRegistry } from "./registry.js";
 import { handleConnection } from "./connection.js";
 import { JsTsRunner } from "./runner/JsTsRunner.js";
+import { CSharpRunner } from "./runner/CSharpRunner.js";
 import type { Runner } from "./runner/Runner.js";
 
 export interface CreateServerOptions {
   /** 0 (default) gir en efemer port — praktisk for BDD/tester. */
   port?: number;
   assignmentsDir?: string;
+  /** Overstyr settet av runtime-runnere (default: JS/TS + C#). */
+  runners?: Runner[];
+  /** Bakoverkompatibel snarvei for å injisere én enkelt runner (tester). */
   runner?: Runner;
   projectRoot?: string;
 }
@@ -28,10 +32,14 @@ export async function createServer(
 ): Promise<ServerHandle> {
   const projectRoot = opts.projectRoot ?? process.cwd();
   const registry = await AssignmentRegistry.load(opts.assignmentsDir);
-  const runner = opts.runner ?? new JsTsRunner(projectRoot);
+  const runners =
+    opts.runners ??
+    (opts.runner
+      ? [opts.runner]
+      : [new JsTsRunner(projectRoot), new CSharpRunner(projectRoot)]);
 
   const wss = new WebSocketServer({ port: opts.port ?? 0 });
-  wss.on("connection", (ws) => handleConnection(ws, { registry, runner }));
+  wss.on("connection", (ws) => handleConnection(ws, { registry, runners }));
 
   await new Promise<void>((resolve, reject) => {
     wss.once("listening", resolve);

@@ -32,7 +32,9 @@ function parseArgs(argv: string[]): Args {
 }
 
 function languageFromFile(file: string): Language {
-  return file.endsWith(".ts") ? "ts" : "js";
+  if (file.endsWith(".ts")) return "ts";
+  if (file.endsWith(".cs") || file.endsWith(".csx")) return "cs";
+  return "js";
 }
 
 const args = parseArgs(process.argv.slice(2));

@@ -5,7 +5,7 @@
  */
 import type { Report, TestResult } from "./report.js";
 
-export type Language = "js" | "ts";
+export type Language = "js" | "ts" | "cs";
 
 /** Client → Server: én innsending av en løsningsfil. */
 export interface SubmitMessage {

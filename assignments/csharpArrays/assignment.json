@@ -1,0 +1,7 @@
+{
+  "id": "csharpArrays",
+  "displayName": "Array Methods (C#)",
+  "language": "cs",
+  "entry": "Submission",
+  "testFile": "Tests.cs"
+}

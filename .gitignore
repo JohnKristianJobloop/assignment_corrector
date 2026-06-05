@@ -3,3 +3,7 @@ dist/
 .sandbox/
 *.log
 .DS_Store
+bin/
+debug/
+obj/
+.sandbox/
