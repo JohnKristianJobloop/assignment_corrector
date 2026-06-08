@@ -39,7 +39,7 @@ foreach (var m in tests)
             ? null
             : Activator.CreateInstance(m.DeclaringType!);
         var ret = m.Invoke(instance, null);
-        if (ret is System.Threading.Tasks.Task task) task.GetAwaiter().GetResult();
+        if (ret is Task task) task.GetAwaiter().GetResult();
         sw.Stop();
         passed++;
         Emit(new { kind = "result", name, status = "pass", durationMs = sw.Elapsed.TotalMilliseconds });
