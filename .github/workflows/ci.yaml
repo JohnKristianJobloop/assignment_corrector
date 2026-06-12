@@ -12,6 +12,7 @@ permissions:
 jobs:
   release:
     name: Test, build, package, and release
+    environment: actions
     runs-on: ubuntu-latest
 
     steps:
@@ -42,6 +43,7 @@ jobs:
         env:
           SERVER_HOST: ${{ vars.SERVER_HOST }}
         run: |
+          echo "$SERVER_HOST"
           npm run build -w @johnkristianjobloop/oppgavehjelper
 
           if [ -z "$SERVER_HOST" ]; then

@@ -42,7 +42,7 @@ export async function* stream(
     closed = true;
     signal();
   });
-
+  
   try {
     while (true) {
       while (queue.length > 0) {
