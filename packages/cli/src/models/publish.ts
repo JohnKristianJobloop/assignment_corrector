@@ -23,7 +23,7 @@ export function parsePublishArgs(argv: string[]): PublishArgs {
 
   if (!repo) {
     console.error(
-      "Bruk: oppgaveretter publish <repo-mappe> [--server ws://host:port] [--token <token>] [--force]",
+      "Bruk: oppgavehjelper publish <repo-mappe> [--server ws://host:port] [--token <token>] [--force]",
     );
     process.exit(2);
   }

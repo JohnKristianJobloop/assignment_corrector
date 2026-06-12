@@ -20,7 +20,7 @@ export function parseSubmitArgs(argv: string[]): SubmitArgs {
 
   if (!file) {
     console.error(
-      "Bruk: oppgaveretter <fil> [--assignment <id>] [--server ws://host:port]",
+      "Bruk: oppgavehjelper <fil> [--assignment <id>] [--server ws://host:port]",
     );
     process.exit(2);
   }

@@ -55,14 +55,40 @@ npm run dev:cli -- ./csharpArrays.cs            # C#
 CLI-en skriver ✓/✗ per assertion og en sluttrapport, og avslutter med
 exit-kode 0 hvis løsningen er korrekt, ellers 1.
 
-### Installert CLI (npm)
+### Installert CLI
 
-CLI-en pakkes som `@oppgaveretter/cli` med protokollen bundlet inn, så den kan
-kjøres frittstående uten repoet:
+CLI-en heter `oppgavehjelper`. Den distribueres på to måter, begge bygget av
+release-workflowen (se under):
+
+- **npm-pakke** `@kodehode/oppgavehjelper` (GitHub Packages), med protokollen
+  bundlet inn, så den kjører frittstående uten repoet:
+
+  ```bash
+  npx @kodehode/oppgavehjelper <fil> [--assignment <id>] [--server ws://host:port]
+  ```
+
+- **Frittstående binærfiler** for Linux, macOS (arm64/x64) og Windows
+  (x64/arm64), kompilert med Bun — trenger verken Node eller Bun installert.
+  Lastes ned fra GitHub Release.
+
+Bygge alt lokalt:
 
 ```bash
-npm run build:cli            # bygger packages/cli/dist/ med tsup
-npx oppgaveretter <fil> [--assignment <id>] [--server ws://host:port]
+npm run build:cli            # tsup-bunt i packages/cli/dist/ + bun-binærfiler i dist/
+```
+
+`build:cli` bygger først JS-buntet med tsup, og kompilerer det så til
+plattform-binærfiler i `dist/` med `bun build --compile`.
+
+### Automatisk release (GitHub Actions)
+
+Workflowen `.github/workflows/ci.yaml` (`Release CLI`) trigges av en versjons-tag
+`vX.Y.Z`. Den kjører unit- og BDD-testene, bygger CLI-en, publiserer npm-pakka
+til GitHub Packages og oppretter en GitHub Release med binærfilene. Se
+[`workflow_explanation.md`](workflow_explanation.md) for en steg-for-steg-forklaring.
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0   # starter release-pipelinen
 ```
 
 ## Publisere en ny oppgave (git bundle)
@@ -73,7 +99,7 @@ verifiserer bunten, **self-tester referanseløsningen** mot oppgavens egen testf
 og legger oppgaven i `assignments/` først når referansen gir en KORREKT rapport.
 
 ```bash
-oppgaveretter publish <repo-mappe> --server ws://host:8080 --token <PUBLISH_TOKEN> [--force]
+oppgavehjelper publish <repo-mappe> --server ws://host:8080 --token <PUBLISH_TOKEN> [--force]
 ```
 
 Oppgave-repoet må inneholde (i `HEAD`):
@@ -112,7 +138,14 @@ packages/
     src/runner/JsTsRunner.ts + vitestEntry.ts   JS/TS via Vitest
     src/runner/CSharpRunner.ts + csharpSandbox.ts + csharp-template/   C# via dotnet + xUnit
     src/publish/   git-bundle-sandbox + publiseringsvalidering (verify, self-test, reload)
-  cli/         submitSolution()/publishAssignment()-bibliotek + CLI-wrapper (submit + publish)
+  cli/         CLI for innsending + publisering, bygget med tsup til ett ESM-bunt
+    src/index.ts                CLI-entry: ruter "publish" → runPublish, ellers runSubmit
+    src/models/submit.ts        parseSubmitArgs + runSubmit + submitSolution()-bibliotek
+    src/models/publish.ts       parsePublishArgs + runPublish + publishAssignment() + git-bundle
+    src/models/client.ts        delt WebSocket-strøm (send melding, yield serversvar)
+    src/models/render.ts        språk-deteksjon fra filnavn + rendering av resultat/rapport
+    src/models/globals.ts       defaults (server-URL) + terminal-meldingssett
+    src/models/interfaces|types  argument-/options-typer mot protokollen
 features/      Gherkin-akseptansetester (Cucumber): de kjørbare scenarioene (@csharp gates C#)
 assignments/   kjente oppgaver, én mappe per oppgave (assignment.json + testfil)
 ```

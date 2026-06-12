@@ -11,6 +11,6 @@ export default defineConfig({
   platform: "node",
   outDir: "dist",
   clean: true,
-  noExternal: [/@JohnKristianJobloop\//],
+  noExternal: [/@oppgaveretter\//],
   external: ["ws"],
 });

@@ -41,7 +41,34 @@ jobs:
         run: npm run bdd
 
       - name: Build CLI executables
-        run: npm run build:cli
+        env:
+          SERVER_HOST: ${{ vars.SERVER_HOST }}
+        run: |
+          npm run build -w @kodehode/oppgavehjelper
+
+          if [ -z "$SERVER_HOST" ]; then
+            DEFINE_SERVER_HOST="undefined"
+          else
+            DEFINE_SERVER_HOST="\"$SERVER_HOST\""
+          fi
+
+          bun build packages/cli/dist/index.js \
+            --compile \
+            --target=bun-linux-x64 \
+            --define SERVER_HOST="$DEFINE_SERVER_HOST" \
+            --outfile dist/oppgavehjelper
+
+          bun build packages/cli/dist/index.js \
+            --compile \
+            --target=bun-win-x64 \
+            --define SERVER_HOST="$DEFINE_SERVER_HOST" \
+            --outfile dist/oppgavehjelper-winx64
+
+          bun build packages/cli/dist/index.js \
+            --compile \
+            --target=bun-macos-arm64 \
+            --define SERVER_HOST="$DEFINE_SERVER_HOST" \
+            --outfile dist/oppgavehjelper-macarm64
 
       - name: Make Unix binaries executable
         run: |
