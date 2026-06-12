@@ -8,7 +8,7 @@
   "scripts": {
     "dev:server": "tsx packages/server/src/index.ts",
     "dev:cli": "tsx packages/cli/src/index.ts",
-    "build:cli": "npm run build -w @oppgaveretter/cli",
+    "build:cli": "npm run build -w @kodehode/oppgavehjelper",
     "test": "vitest run",
     "bdd": "NODE_OPTIONS='--import tsx' cucumber-js",
     "verify": "npm run bdd && npm run test"

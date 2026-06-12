@@ -2,6 +2,6 @@
   "id": "csharpArrays",
   "displayName": "Array Methods (C#)",
   "language": "cs",
-  "entry": "Submission",
+  "entry": "submission",
   "testFile": "Tests.cs"
 }
