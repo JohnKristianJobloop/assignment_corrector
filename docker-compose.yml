@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
     volumes:
       # Publiserte oppgaver skrives hit og må overleve omstart.
-      - ./assignments:/var/data/assignments
+      - ./assignments:/app/assignments
     tmpfs:
       # Innsendings-sandboxen er flyktig.
       - /app/.sandbox
@@ -27,5 +27,3 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-volumes:
-  /var/data:
