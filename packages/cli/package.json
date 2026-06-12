@@ -1,5 +1,5 @@
 {
-  "name": "@kodehode/oppgavehjelper",
+  "name": "@johnkristianjobloop/oppgavehjelper",
   "version": "0.1.0",
   "type": "module",
   "description": "CLI for å sende inn løsninger og publisere oppgaver til oppgaveretteren.",
