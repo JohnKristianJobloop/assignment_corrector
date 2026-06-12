@@ -68,6 +68,12 @@ jobs:
             --define SERVER_HOST="$DEFINE_SERVER_HOST" \
             --outfile dist/oppgavehjelper-macarm64
 
+          bun build packages/cli/dist/index.js \
+            --compile \
+            --target=bun-macos-x64 \
+            --define SERVER_HOST="$DEFINE_SERVER_HOST" \
+            --outfile dist/oppgavehjelper-macx64 
+
       - name: Make Unix binaries executable
         run: |
           chmod +x dist/oppgavehjelper
