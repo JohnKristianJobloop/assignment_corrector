@@ -15,7 +15,12 @@ export interface CreateServerOptions {
   /** Bakoverkompatibel snarvei for å injisere én enkelt runner (tester). */
   runner?: Runner;
   projectRoot?: string;
+  /** Admin-token for publisering (default: env PUBLISH_TOKEN). Tomt ⇒ av. */
+  publishToken?: string;
 }
+
+/** Tak på WebSocket-rammer: dekker base64-bunten + litt overhead. */
+const MAX_PAYLOAD_BYTES = 40 * 1024 * 1024;
 
 export interface ServerHandle {
   url: string;
@@ -37,9 +42,15 @@ export async function createServer(
     (opts.runner
       ? [opts.runner]
       : [new JsTsRunner(projectRoot), new CSharpRunner(projectRoot)]);
+  const publishToken = opts.publishToken ?? process.env.PUBLISH_TOKEN;
 
-  const wss = new WebSocketServer({ port: opts.port ?? 0 });
-  wss.on("connection", (ws) => handleConnection(ws, { registry, runners }));
+  const wss = new WebSocketServer({
+    port: opts.port ?? 0,
+    maxPayload: MAX_PAYLOAD_BYTES,
+  });
+  wss.on("connection", (ws) =>
+    handleConnection(ws, { registry, runners, publishToken, projectRoot }),
+  );
 
   await new Promise<void>((resolve, reject) => {
     wss.once("listening", resolve);

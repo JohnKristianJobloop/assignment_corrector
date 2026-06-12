@@ -9,6 +9,12 @@ export interface Assignment {
   entry: string;
   /** Filnavn på testfilen, relativt til oppgavemappa. */
   testFile: string;
+  /**
+   * Filnavn på en kjent-korrekt referanseløsning, relativt til oppgavemappa.
+   * Brukes ved publisering til å self-teste oppgaven (referansen må gi en
+   * KORREKT rapport). Valgfri for kjørende oppgaver.
+   */
+  reference?: string;
   /** Absolutt sti til oppgavemappa. */
   dir: string;
   /** Absolutt sti til testfilen. */
@@ -20,11 +26,20 @@ export interface Assignment {
  * `resolve()` utleder oppgave-id fra et brukeroppgitt filnavn/strenge.
  */
 export class AssignmentRegistry {
-  private constructor(private readonly map: Map<string, Assignment>) {}
+  private constructor(
+    private map: Map<string, Assignment>,
+    /** Mappa registeret ble lastet fra — brukes av reload(). */
+    public readonly dir: string,
+  ) {}
 
   static async load(
     dir = path.resolve(process.cwd(), "assignments"),
   ): Promise<AssignmentRegistry> {
+    return new AssignmentRegistry(await AssignmentRegistry.read(dir), dir);
+  }
+
+  /** Leser alle gyldige `assignment.json` under `dir` til et nytt map. */
+  private static async read(dir: string): Promise<Map<string, Assignment>> {
     const map = new Map<string, Assignment>();
     let entries: import("node:fs").Dirent[] = [];
     try {
@@ -52,7 +67,16 @@ export class AssignmentRegistry {
       }
     }
 
-    return new AssignmentRegistry(map);
+    return map;
+  }
+
+  /**
+   * Leser assignments-mappa på nytt og bytter ut det interne registeret.
+   * Brukes etter at en ny oppgave er publisert, slik at den blir synlig for
+   * påfølgende tilkoblinger uten omstart av serveren.
+   */
+  async reload(): Promise<void> {
+    this.map = await AssignmentRegistry.read(this.dir);
   }
 
   /** Utleder oppgave-id fra et filnavn/strenge (strip mappe + extension). */
