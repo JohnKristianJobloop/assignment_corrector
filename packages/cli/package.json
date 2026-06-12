@@ -1,14 +1,33 @@
 {
-  "name": "@oppgaveretter/cli",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@kodehode/oppgavehjelper",
+  "version": "0.1.0",
   "type": "module",
-  "main": "src/index.ts",
+  "description": "CLI for å sende inn løsninger og publisere oppgaver til oppgaveretteren.",
   "bin": {
-    "oppgaveretter": "src/index.ts"
+    "oppgavehjelper": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@oppgaveretter/protocol": "*",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@oppgaveretter/protocol": "*",
+    "tsup": "^8.0.0"
   }
 }

@@ -18,7 +18,25 @@ export interface SubmitMessage {
   content: string;
 }
 
-export type ClientMessage = SubmitMessage;
+/**
+ * Client → Server: publiser en ny oppgave. Bærer et git-bundle (base64) av
+ * forfatterens oppgave-repo. Serveren verifiserer, self-tester referanse-
+ * løsningen, og legger oppgaven i assignments-mappa hvis alt går igjennom.
+ */
+export interface PublishAssignmentMessage {
+  type: "publish-assignment";
+  /** Visningsnavn på bunten, f.eks. "min-oppgave.bundle". */
+  filename: string;
+  /** base64-enkodet git bundle av oppgave-repoet (HEAD). */
+  bundle: string;
+  encoding: "base64";
+  /** Admin-token; sammenlignes med serverens PUBLISH_TOKEN. */
+  token: string;
+  /** Tillat overskriving av en oppgave med samme id (default false). */
+  force?: boolean;
+}
+
+export type ClientMessage = SubmitMessage | PublishAssignmentMessage;
 
 /** Oppgave gjenkjent — validering starter. */
 export interface AcceptedMessage {
@@ -45,9 +63,16 @@ export interface ErrorMessage {
   message: string;
 }
 
+/** Oppgave publisert og lagt i registry (etter vellykket self-test). */
+export interface PublishedMessage {
+  type: "published";
+  assignment: string;
+}
+
 export type ServerMessage =
   | AcceptedMessage
   | RejectedMessage
   | TestResultMessage
   | ReportMessage
-  | ErrorMessage;
+  | ErrorMessage
+  | PublishedMessage;

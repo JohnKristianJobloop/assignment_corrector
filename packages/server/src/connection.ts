@@ -1,12 +1,23 @@
 import type { WebSocket } from "ws";
-import type { ServerMessage, SubmitMessage } from "@oppgaveretter/protocol";
+import type {
+  PublishAssignmentMessage,
+  ServerMessage,
+  SubmitMessage,
+} from "@oppgaveretter/protocol";
 import type { AssignmentRegistry } from "./registry.js";
 import type { Runner } from "./runner/Runner.js";
+import { extractBundle } from "./publish/bundleSandbox.js";
+import { publishAssignment } from "./publish/publishAssignment.js";
+import { RejectedError } from "./publish/errors.js";
 
 export interface ConnectionDeps {
   registry: AssignmentRegistry;
   /** Runtime-runnere; den første som `supports(language)` velges per innsending. */
   runners: Runner[];
+  /** Admin-token for publisering. Udefinert ⇒ publisering deaktivert. */
+  publishToken?: string;
+  /** Prosjektrot for sandbox (`.sandbox/`). */
+  projectRoot?: string;
 }
 
 /** Kobler én WebSocket-klient til validerings-flyten. */
@@ -21,6 +32,8 @@ export function handleConnection(ws: WebSocket, deps: ConnectionDeps): void {
     }
     if (isSubmit(msg)) {
       void handleSubmit(ws, deps, msg);
+    } else if (isPublish(msg)) {
+      void handlePublish(ws, deps, msg);
     }
   });
 }
@@ -54,11 +67,63 @@ async function handleSubmit(
   }
 }
 
+async function handlePublish(
+  ws: WebSocket,
+  deps: ConnectionDeps,
+  msg: PublishAssignmentMessage,
+): Promise<void> {
+  if (!deps.publishToken) {
+    send(ws, { type: "rejected", reason: "Publisering er deaktivert på serveren" });
+    return;
+  }
+  if (msg.token !== deps.publishToken) {
+    send(ws, { type: "rejected", reason: "Ugyldig publiseringstoken" });
+    return;
+  }
+
+  let bundle: Buffer;
+  try {
+    bundle = Buffer.from(msg.bundle, "base64");
+  } catch {
+    send(ws, { type: "rejected", reason: "Ugyldig base64-bunt" });
+    return;
+  }
+
+  let extracted: Awaited<ReturnType<typeof extractBundle>> | undefined;
+  try {
+    extracted = await extractBundle(bundle, deps.projectRoot ?? process.cwd());
+    const { assignment, report } = await publishAssignment(
+      extracted.workDir,
+      deps,
+      { force: msg.force },
+      (result) => send(ws, { type: "test-result", ...result }),
+    );
+    send(ws, { type: "report", ...report });
+    send(ws, { type: "published", assignment });
+  } catch (e) {
+    if (e instanceof RejectedError) {
+      send(ws, { type: "rejected", reason: e.message });
+    } else {
+      send(ws, { type: "error", message: e instanceof Error ? e.message : String(e) });
+    }
+  } finally {
+    await extracted?.cleanup();
+  }
+}
+
 function isSubmit(msg: unknown): msg is SubmitMessage {
+  return hasType(msg, "submit");
+}
+
+function isPublish(msg: unknown): msg is PublishAssignmentMessage {
+  return hasType(msg, "publish-assignment");
+}
+
+function hasType(msg: unknown, type: string): boolean {
   return (
     typeof msg === "object" &&
     msg !== null &&
-    (msg as { type?: unknown }).type === "submit"
+    (msg as { type?: unknown }).type === type
   );
 }
 
@@ -66,4 +131,4 @@ function send(ws: WebSocket, message: ServerMessage): void {
   ws.send(JSON.stringify(message));
 }
 
-export const __test = { handleSubmit, isSubmit };
+export const __test = { handleSubmit, handlePublish, isSubmit, isPublish };

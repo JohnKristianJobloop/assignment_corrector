@@ -55,6 +55,54 @@ npm run dev:cli -- ./csharpArrays.cs            # C#
 CLI-en skriver ✓/✗ per assertion og en sluttrapport, og avslutter med
 exit-kode 0 hvis løsningen er korrekt, ellers 1.
 
+### Installert CLI (npm)
+
+CLI-en pakkes som `@oppgaveretter/cli` med protokollen bundlet inn, så den kan
+kjøres frittstående uten repoet:
+
+```bash
+npm run build:cli            # bygger packages/cli/dist/ med tsup
+npx oppgaveretter <fil> [--assignment <id>] [--server ws://host:port]
+```
+
+## Publisere en ny oppgave (git bundle)
+
+Oppgaver kan publiseres til en kjørende server over WebSocket. Forfatteren
+bunter oppgave-repoet sitt (`git bundle`), CLI-en sender det, og serveren
+verifiserer bunten, **self-tester referanseløsningen** mot oppgavens egen testfil,
+og legger oppgaven i `assignments/` først når referansen gir en KORREKT rapport.
+
+```bash
+oppgaveretter publish <repo-mappe> --server ws://host:8080 --token <PUBLISH_TOKEN> [--force]
+```
+
+Oppgave-repoet må inneholde (i `HEAD`):
+
+- `assignment.json` med de vanlige feltene **pluss `reference`** — filnavnet på en
+  kjent-korrekt løsning (f.eks. `"reference": "reference.ts"`).
+- testfilen og referanseløsningen som `assignment.json` peker på.
+
+Serveren krever at `PUBLISH_TOKEN` er satt i miljøet; er den tom, er publisering
+deaktivert. Etter vellykket publisering laster serveren registeret på nytt, så den
+nye oppgaven er innsendbar uten omstart.
+
+Sikkerhet: bunten verifiseres med `git bundle verify`, leses med `fsckObjects`,
+pakkes ut via `git archive | tar` (ingen checkout/hooks), med hardenet git-env,
+størrelsesgrense og timeout. Se `project_feedback_implementation_design_docs.md`
+for begrunnelsen bak buntformatet.
+
+## Kjøre med Docker
+
+Et Node + .NET 10-image kjører både JS/TS- og C#-runneren:
+
+```bash
+cp .env.example .env         # sett PUBLISH_TOKEN for å aktivere publisering
+docker compose up --build    # serveren lytter på ws://127.0.0.1:8080
+```
+
+Publiserte oppgaver skrives til den monterte `./assignments`-mappa og overlever
+omstart. Innsendings-sandboxen (`/app/.sandbox`) er flyktig (tmpfs).
+
 ## Prosjektstruktur
 
 ```
@@ -63,7 +111,8 @@ packages/
   server/      runtime-server: registry, Runner-er (JS/TS + C#), sandbox, ws-håndtering
     src/runner/JsTsRunner.ts + vitestEntry.ts   JS/TS via Vitest
     src/runner/CSharpRunner.ts + csharpSandbox.ts + csharp-template/   C# via dotnet + xUnit
-  cli/         submitSolution()-bibliotek + tynn CLI-wrapper
+    src/publish/   git-bundle-sandbox + publiseringsvalidering (verify, self-test, reload)
+  cli/         submitSolution()/publishAssignment()-bibliotek + CLI-wrapper (submit + publish)
 features/      Gherkin-akseptansetester (Cucumber): de kjørbare scenarioene (@csharp gates C#)
 assignments/   kjente oppgaver, én mappe per oppgave (assignment.json + testfil)
 ```
@@ -72,7 +121,8 @@ assignments/   kjente oppgaver, én mappe per oppgave (assignment.json + testfil
 
 Lag en mappe under `assignments/<id>/` med:
 
-- `assignment.json`: `{ id, displayName, language, entry, testFile }`
+- `assignment.json`: `{ id, displayName, language, entry, testFile }` (+ valgfri
+  `reference` — en kjent-korrekt løsning brukt til self-test ved publisering)
 - en testfil som validerer løsningen
 
 **JS/TS:** `language: "ts"` (eller `"js"`). Testfilen importerer løsningen via

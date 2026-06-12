@@ -1,0 +1,28 @@
+services:
+  server:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      # Tom token ⇒ publisering deaktivert. Sett PUBLISH_TOKEN i en .env-fil
+      # (eller i miljøet) for å aktivere `oppgaveretter publish`.
+      - PUBLISH_TOKEN=${PUBLISH_TOKEN:-}
+      # Valgfri, for framtidig agent-vurdering.
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    restart: unless-stopped
+    volumes:
+      # Publiserte oppgaver skrives hit og må overleve omstart.
+      - ./assignments:/app/assignments
+    tmpfs:
+      # Innsendings-sandboxen er flyktig.
+      - /app/.sandbox
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('net').connect(8080,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3

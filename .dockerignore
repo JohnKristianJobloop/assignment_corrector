@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+.git
+.sandbox
+dist
+**/dist
+**/obj
+**/bin
+*.log
+.DS_Store
+.env

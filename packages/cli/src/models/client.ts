@@ -1,25 +1,16 @@
 import WebSocket from "ws";
-import type { Language, ServerMessage } from "@oppgaveretter/protocol";
+import type {
+  ClientMessage,
+  ServerMessage,
+} from "@oppgaveretter/protocol";
 
-export interface SubmitOptions {
-  /** WebSocket-URL til serveren, f.eks. ws://127.0.0.1:8080 */
-  server: string;
-  assignment: string;
-  filename: string;
-  language: Language;
-  content: string;
-}
-
-const TERMINAL = new Set(["report", "rejected", "error"]);
-
-/**
- * Kobler til serveren, sender innsendingen, og yield-er hver ServerMessage
- * etter hvert som den kommer. Dette er sømmen både CLI og BDD-steg bruker.
- */
-export async function* submitSolution(
-  opts: SubmitOptions,
+/** Felles WebSocket-strøm: send én klientmelding, yield serversvar til terminal. */
+export async function* stream(
+  server: string,
+  message: ClientMessage,
+  terminal: Set<string>,
 ): AsyncGenerator<ServerMessage> {
-  const ws = new WebSocket(opts.server);
+  const ws = new WebSocket(server);
   const queue: ServerMessage[] = [];
   let wake: (() => void) | null = null;
   let closed = false;
@@ -33,16 +24,7 @@ export async function* submitSolution(
     }
   };
 
-  ws.on("open", () => {
-    const submit = {
-      type: "submit" as const,
-      assignment: opts.assignment,
-      filename: opts.filename,
-      language: opts.language,
-      content: opts.content,
-    };
-    ws.send(JSON.stringify(submit));
-  });
+  ws.on("open", () => ws.send(JSON.stringify(message)));
   ws.on("message", (data) => {
     try {
       queue.push(JSON.parse(data.toString()) as ServerMessage);
@@ -66,7 +48,7 @@ export async function* submitSolution(
       while (queue.length > 0) {
         const msg = queue.shift()!;
         yield msg;
-        if (TERMINAL.has(msg.type)) {
+        if (terminal.has(msg.type)) {
           return;
         }
       }

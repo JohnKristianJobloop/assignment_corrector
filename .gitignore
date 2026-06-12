@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .sandbox/
+.env
 *.log
 .DS_Store
 bin/
