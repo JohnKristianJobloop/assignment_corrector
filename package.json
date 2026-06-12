@@ -15,13 +15,13 @@
     "verify": "npm run bdd && npm run test"
   },
   "dependencies": {
+    "tsx": "^4.19.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^13.0.0",
     "@types/node": "^22.10.0",
     "@types/ws": "^8.5.13",
-    "tsx": "^4.19.0",
     "vitest": "^4.1.0"
   }
 }

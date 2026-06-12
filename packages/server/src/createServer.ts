@@ -1,4 +1,5 @@
 import { WebSocketServer } from "ws";
+import { createServer as createHttpServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { AssignmentRegistry } from "./registry.js";
 import { handleConnection } from "./connection.js";
@@ -44,8 +45,22 @@ export async function createServer(
       : [new JsTsRunner(projectRoot), new CSharpRunner(projectRoot)]);
   const publishToken = opts.publishToken ?? process.env.PUBLISH_TOKEN;
 
+  // HTTP-server med helsesjekk-endepunkt. Render (web service) krever en åpen
+  // HTTP-port som svarer 200 for å regne tjenesten som frisk; uten dette blir
+  // en ren WebSocket-server SIGTERM-et i en omstartsløkke. WebSocket-serveren
+  // henges på samme HTTP-server slik at oppgradering til ws fortsatt fungerer.
+  const httpServer = createHttpServer((req, res) => {
+    if (req.url === "/healthz" || req.url === "/") {
+      res.writeHead(200, { "content-type": "text/plain" });
+      res.end("ok");
+      return;
+    }
+    res.writeHead(404);
+    res.end();
+  });
+
   const wss = new WebSocketServer({
-    port: opts.port ?? 0,
+    server: httpServer,
     maxPayload: MAX_PAYLOAD_BYTES,
   });
   wss.on("connection", (ws) =>
@@ -53,18 +68,26 @@ export async function createServer(
   );
 
   await new Promise<void>((resolve, reject) => {
-    wss.once("listening", resolve);
-    wss.once("error", reject);
+    httpServer.once("error", reject);
+    // 0.0.0.0 slik at containeren er nåbar utenfra (Render/Docker), ikke kun
+    // loopback.
+    httpServer.listen(opts.port ?? 0, "0.0.0.0", () => resolve());
   });
 
-  const port = (wss.address() as AddressInfo).port;
+  const port = (httpServer.address() as AddressInfo).port;
 
   return {
     url: `ws://127.0.0.1:${port}`,
     port,
     close: () =>
-      new Promise<void>((resolve, reject) =>
-        wss.close((err) => (err ? reject(err) : resolve())),
-      ),
+      new Promise<void>((resolve, reject) => {
+        // Lukk WebSocket-serveren først (avslutter aktive klienter), deretter
+        // den underliggende HTTP-serveren.
+        wss.close((wsErr) =>
+          httpServer.close((httpErr) =>
+            wsErr || httpErr ? reject(wsErr ?? httpErr) : resolve(),
+          ),
+        );
+      }),
   };
 }
