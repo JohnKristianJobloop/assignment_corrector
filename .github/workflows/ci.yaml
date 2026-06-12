@@ -24,7 +24,7 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://npm.pkg.github.com
-          scope: "@kodehode"
+          scope: "@johnkristianjobloop"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -90,7 +90,7 @@ jobs:
 
           cat > package/package.json <<EOF
           {
-            "name": "@kodehode/oppgavehjelper",
+            "name": "@johnkristianjobloop/oppgavehjelper",
             "version": "$VERSION",
             "description": "Compiled JavaScript CLI for Oppgavehjelper",
             "type": "module",
