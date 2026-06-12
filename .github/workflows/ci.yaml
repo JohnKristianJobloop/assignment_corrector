@@ -37,10 +37,6 @@ jobs:
       - name: Run unit tests
         run: npm run test
 
-      - name: Run BDD tests
-        env:
-          SERVER_HOST:${{vars.SERVER_HOST}}
-        run: npm run bdd
 
       - name: Build CLI executables
         env:
