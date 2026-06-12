@@ -10,10 +10,11 @@ services:
       - PUBLISH_TOKEN=${PUBLISH_TOKEN:-}
       # Valgfri, for framtidig agent-vurdering.
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ASSIGNMENTS_DIRECTORY=${ASSIGNMENTS_DIRECTORY}
     restart: unless-stopped
     volumes:
       # Publiserte oppgaver skrives hit og må overleve omstart.
-      - ./assignments:/app/assignments
+      - ./assignments:${ASSIGNMENTS_DIRECTORY}
     tmpfs:
       # Innsendings-sandboxen er flyktig.
       - /app/.sandbox

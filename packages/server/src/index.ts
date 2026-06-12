@@ -1,8 +1,8 @@
 import { createServer } from "./createServer.js";
 
 const port = Number(process.env.PORT ?? 8080);
-
-const server = await createServer({ port });
+const dir = process.env.ASSIGNMENTS_DIRECTORY ?? null
+const server = dir == null ? await createServer({ port }) : await createServer({port, assignmentsDir: dir});
 console.log(`Oppgaveretter (JS/TS + C#) lytter på ${server.url}`);
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
