@@ -76,7 +76,7 @@ async function handlePublish(
     send(ws, { type: "rejected", reason: "Publisering er deaktivert på serveren" });
     return;
   }
-  if (msg.token !== deps.publishToken) {
+  if (msg.token !== deps.publishToken.trim()) {
     send(ws, { type: "rejected", reason: "Ugyldig publiseringstoken" });
     return;
   }
