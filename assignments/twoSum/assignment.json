@@ -1,8 +1,0 @@
-{
-  "id": "twoSum",
-  "displayName": "Two Sum",
-  "language": "ts",
-  "entry": "submission",
-  "testFile": "twoSum.test.ts",
-  "reference": "reference.ts"
-}

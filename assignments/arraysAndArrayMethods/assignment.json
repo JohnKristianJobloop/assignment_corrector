@@ -1,7 +1,8 @@
 {
   "id": "arraysAndArrayMethods",
-  "displayName": "Arrays and Array Methods",
+  "displayName": "5 · Arrays og array-metoder",
   "language": "ts",
   "entry": "submission",
-  "testFile": "arraysAndArrayMethods.test.ts"
+  "testFile": "arraysAndArrayMethods.test.ts",
+  "details": "Lever inn en fil med navnet submission (submission.ts eller submission.js).\n\nImplementer tre funksjoner:\n\n1. doubleAll(tall: number[]): number[]\n   Returnerer en ny liste der hvert tall er doblet. En tom liste gir en tom liste.\n\n2. sumArray(tall: number[]): number\n   Returnerer summen av alle tallene.\n\n3. filterEven(tall: number[]): number[]\n   Returnerer kun partallene.\n\nFunksjonene bør eksporteres fra submission slik at testfilen finner dem. Eksport er valgfritt, men anbefalt."
 }

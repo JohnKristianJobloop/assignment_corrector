@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import type { AssignmentSummary, Language } from "@oppgaveretter/protocol";
 
 export interface Assignment {
   id: string;
@@ -15,6 +16,8 @@ export interface Assignment {
    * KORREKT rapport). Valgfri for kjørende oppgaver.
    */
   reference?: string;
+  /** Fritekst-beskrivelse av oppgaven, returnert av `details`-forespørselen. */
+  details?: string;
   /** Absolutt sti til oppgavemappa. */
   dir: string;
   /** Absolutt sti til testfilen. */
@@ -91,5 +94,17 @@ export class AssignmentRegistry {
 
   ids(): string[] {
     return [...this.map.keys()];
+  }
+
+  /** Kortfattede beskrivelser av alle oppgaver, sortert på id. */
+  list(): AssignmentSummary[] {
+    return [...this.map.values()]
+      .map((a) => ({
+        id: a.id,
+        displayName: a.displayName,
+        language: a.language as Language,
+        testFile: a.testFile,
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id));
   }
 }

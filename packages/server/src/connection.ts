@@ -1,6 +1,9 @@
 import type { WebSocket } from "ws";
 import type {
+  Language,
+  ListAssignmentsMessage,
   PublishAssignmentMessage,
+  RequestDetailsMessage,
   ServerMessage,
   SubmitMessage,
 } from "@oppgaveretter/protocol";
@@ -34,6 +37,10 @@ export function handleConnection(ws: WebSocket, deps: ConnectionDeps): void {
       void handleSubmit(ws, deps, msg);
     } else if (isPublish(msg)) {
       void handlePublish(ws, deps, msg);
+    } else if (isList(msg)) {
+      handleList(ws, deps, msg);
+    } else if (isDetailsRequest(msg)) {
+      handleDetails(ws, deps, msg);
     }
   });
 }
@@ -112,8 +119,45 @@ async function handlePublish(
   }
 }
 
+/** Svar på en listeforespørsel med hele registeret. */
+function handleList(
+  ws: WebSocket,
+  { registry }: ConnectionDeps,
+  _msg: ListAssignmentsMessage,
+): void {
+  send(ws, { type: "assignments-list", assignments: registry.list() });
+}
+
+/** Svar på en detalj-forespørsel ved å slå opp oppgaven på eksakt id. */
+function handleDetails(
+  ws: WebSocket,
+  { registry }: ConnectionDeps,
+  msg: RequestDetailsMessage,
+): void {
+  const assignment = registry.get(msg.name);
+  if (!assignment) {
+    send(ws, { type: "rejected", reason: `Ukjent oppgave: ${msg.name}` });
+    return;
+  }
+  send(ws, {
+    type: "assignment-details",
+    id: assignment.id,
+    displayName: assignment.displayName,
+    language: assignment.language as Language,
+    details: assignment.details,
+  });
+}
+
 function isSubmit(msg: unknown): msg is SubmitMessage {
   return hasType(msg, "submit");
+}
+
+function isList(msg: unknown): msg is ListAssignmentsMessage {
+  return hasType(msg, "list-assignments");
+}
+
+function isDetailsRequest(msg: unknown): msg is RequestDetailsMessage {
+  return hasType(msg, "assignment-details-request");
 }
 
 function isPublish(msg: unknown): msg is PublishAssignmentMessage {
@@ -132,4 +176,13 @@ function send(ws: WebSocket, message: ServerMessage): void {
   ws.send(JSON.stringify(message));
 }
 
-export const __test = { handleSubmit, handlePublish, isSubmit, isPublish };
+export const __test = {
+  handleSubmit,
+  handlePublish,
+  handleList,
+  handleDetails,
+  isSubmit,
+  isPublish,
+  isList,
+  isDetailsRequest,
+};

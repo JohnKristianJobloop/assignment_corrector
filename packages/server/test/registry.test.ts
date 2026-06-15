@@ -23,4 +23,20 @@ describe("AssignmentRegistry", () => {
     const registry = await AssignmentRegistry.load(assignmentsDir);
     expect(registry.resolve("ukjentOppgave.ts")).toBeUndefined();
   });
+
+  it("get() returnerer oppgaven med details-feltet fra assignment.json", async () => {
+    const registry = await AssignmentRegistry.load(assignmentsDir);
+    const arrays = registry.get("arraysAndArrayMethods");
+    expect(arrays?.details).toMatch(/submission/);
+  });
+
+  it("list() returnerer sorterte oppgavebeskrivelser med språk", async () => {
+    const registry = await AssignmentRegistry.load(assignmentsDir);
+    const list = registry.list();
+    const arrays = list.find((a) => a.id === "arraysAndArrayMethods");
+    expect(arrays).toMatchObject({ language: "ts" });
+    // Sortert på id.
+    const ids = list.map((a) => a.id);
+    expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
+  });
 });

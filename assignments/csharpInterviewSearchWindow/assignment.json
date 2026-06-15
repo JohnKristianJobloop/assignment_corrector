@@ -1,0 +1,9 @@
+{
+  "id": "csharpInterviewSearchWindow",
+  "displayName": "C# Intervju 2 · Søk og glidende vindu",
+  "language": "cs",
+  "entry": "submission",
+  "testFile": "Tests.cs",
+  "reference": "Reference.cs",
+  "details": "Intervju-nivå (C#)\nSøk og glidende vindu\n\nInnsendingen skrives til Submission.cs og kompileres sammen med testfila. Du må selv definere den public kontrakten testfila refererer (ingen auto-public), og kan ikke bruke top-level statements.\n\nImplementer klassen. Sikt på effektive løsninger (binærsøk i O(log n), glidende vindu i O(n)):\n\npublic static class Solution\n{\n    // nums er sortert stigende. Indeksen til target, eller -1.\n    public static int BinarySearch(int[] nums, int target);\n\n    // nums er distinkte tall, sortert stigende og rotert et ukjent antall steg\n    // (f.eks. [4,5,6,7,0,1,2]). Indeksen til target, eller -1.\n    public static int SearchRotated(int[] nums, int target);\n\n    // Lengden på den lengste delstrengen i s uten gjentatte tegn.\n    // LengthOfLongestSubstring(\"abcabcbb\") gir 3.\n    public static int LengthOfLongestSubstring(string s);\n}"
+}

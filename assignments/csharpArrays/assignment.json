@@ -1,7 +1,9 @@
 {
   "id": "csharpArrays",
-  "displayName": "Array Methods (C#)",
+  "displayName": "C# 3 · Arrays og array-metoder",
   "language": "cs",
   "entry": "submission",
-  "testFile": "Tests.cs"
+  "testFile": "Tests.cs",
+  "reference": "Reference.cs",
+  "details": "Nivå 3 (C#)\nArrays og array-metoder\n\nInnsendingen skrives til Submission.cs og kompileres sammen med testfila. Du må selv definere den public kontrakten testfila refererer (ingen auto-public), og kan ikke bruke top-level statements.\n\nImplementer klassen:\n\npublic static class Solution\n{\n    // Returnerer en ny array der hvert tall er doblet. En tom array gir en tom array.\n    public static int[] DoubleAll(int[] xs);\n\n    // Returnerer summen av alle tallene.\n    public static int SumArray(int[] xs);\n\n    // Returnerer kun partallene.\n    public static int[] FilterEven(int[] xs);\n}"
 }

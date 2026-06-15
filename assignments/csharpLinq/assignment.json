@@ -1,0 +1,9 @@
+{
+  "id": "csharpLinq",
+  "displayName": "C# 8 · LINQ og høyereordens funksjoner",
+  "language": "cs",
+  "entry": "submission",
+  "testFile": "Tests.cs",
+  "reference": "Reference.cs",
+  "details": "Nivå 8 (C#)\nHøyereordens funksjoner og LINQ (funksjoner som tar imot eller returnerer funksjoner)\n\nInnsendingen skrives til Submission.cs og kompileres sammen med testfila. Du må selv definere den public kontrakten testfila refererer (ingen auto-public), og kan ikke bruke top-level statements.\n\nImplementer klassen:\n\npublic static class Solution\n{\n    // Kaller f på x, og deretter f på resultatet. ApplyTwice(x => x + 1, 0) gir 2.\n    public static int ApplyTwice(System.Func<int, int> f, int x);\n\n    // Returnerer en NY funksjon som legger n til tallet den får. MakeAdder(5)(10) gir 15.\n    public static System.Func<int, int> MakeAdder(int n);\n\n    // Returnerer summen av tallene. Tom liste gir 0. Bruk gjerne LINQ.\n    public static int Total(int[] numbers);\n\n    // Returnerer det lengste ordet. Ved lik lengde returneres det første. Tom liste gir \"\".\n    public static string LongestWord(string[] words);\n}"
+}

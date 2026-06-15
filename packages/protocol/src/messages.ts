@@ -36,7 +36,30 @@ export interface PublishAssignmentMessage {
   force?: boolean;
 }
 
-export type ClientMessage = SubmitMessage | PublishAssignmentMessage;
+/**
+ * Client → Server: be om en oversikt over alle oppgaver i registeret.
+ * Serveren svarer med én `assignments-list`. Eventuell filtrering på språk/
+ * filtype gjøres klient-side på det returnerte settet.
+ */
+export interface ListAssignmentsMessage {
+  type: "list-assignments";
+}
+
+/**
+ * Client → Server: be om detaljene til én oppgave, slått opp på eksakt id.
+ * Serveren svarer med én `assignment-details`, eller `rejected` ved ukjent id.
+ */
+export interface RequestDetailsMessage {
+  type: "assignment-details-request";
+  /** Eksakt oppgave-id (jf. CLI `details --name <id>`). */
+  name: string;
+}
+
+export type ClientMessage =
+  | SubmitMessage
+  | PublishAssignmentMessage
+  | ListAssignmentsMessage
+  | RequestDetailsMessage;
 
 /** Oppgave gjenkjent — validering starter. */
 export interface AcceptedMessage {
@@ -69,10 +92,37 @@ export interface PublishedMessage {
   assignment: string;
 }
 
+/** Kortfattet oppgavebeskrivelse for listevisning. */
+export interface AssignmentSummary {
+  id: string;
+  displayName?: string;
+  language: Language;
+  /** Filnavn på testfilen — nyttig for å se forventet filtype. */
+  testFile: string;
+}
+
+/** Server → Client: hele oppgaveregisteret som svar på `list-assignments`. */
+export interface AssignmentsListMessage {
+  type: "assignments-list";
+  assignments: AssignmentSummary[];
+}
+
+/** Server → Client: detaljene til én oppgave som svar på `assignment-details-request`. */
+export interface AssignmentDetailsMessage {
+  type: "assignment-details";
+  id: string;
+  displayName?: string;
+  language: Language;
+  /** Oppgavebeskrivelsen fra `assignment.json` (kan mangle). */
+  details?: string;
+}
+
 export type ServerMessage =
   | AcceptedMessage
   | RejectedMessage
   | TestResultMessage
   | ReportMessage
   | ErrorMessage
-  | PublishedMessage;
+  | PublishedMessage
+  | AssignmentsListMessage
+  | AssignmentDetailsMessage;

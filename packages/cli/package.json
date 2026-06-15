@@ -1,6 +1,6 @@
 {
-  "name": "@johnkristianjobloop/oppgavehjelper",
-  "version": "0.1.0",
+  "name": "@johnkjobloop/oppgavehjelper",
+  "version": "0.2.16",
   "type": "module",
   "description": "CLI for å sende inn løsninger og publisere oppgaver til oppgaveretteren.",
   "bin": {

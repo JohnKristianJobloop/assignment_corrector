@@ -55,6 +55,53 @@ npm run dev:cli -- ./csharpArrays.cs            # C#
 CLI-en skriver ✓/✗ per assertion og en sluttrapport, og avslutter med
 exit-kode 0 hvis løsningen er korrekt, ellers 1.
 
+### Liste oppgaver
+
+`list` spør serveren om alle oppgavene i registeret og skriver dem ut (id,
+språk og visningsnavn):
+
+```bash
+npm run dev:cli -- list [--server ws://host:port] [-l|--language <språk/filtype>]
+```
+
+`-l`/`--language` filtrerer på språk. Verdien kan være en språkkode (`ts`, `js`,
+`cs`), en filtype (`.ts`, `.cs`) eller et helt filnavn (`foo.ts`), og flere kan
+oppgis kommaseparert eller med gjentatt flagg:
+
+```bash
+npm run dev:cli -- list                  # alle oppgaver
+npm run dev:cli -- list -l ts            # bare JS/TS-oppgaver
+npm run dev:cli -- list --language .cs   # bare C#-oppgaver (via filtype)
+npm run dev:cli -- list -l ts,cs         # JS/TS og C#
+```
+
+### Oppgavedetaljer
+
+`details` slår opp én oppgave på **eksakt id** og skriver ut beskrivelsen fra
+oppgavens `assignment.json` (`details`-feltet), sammen med visningsnavn og språk:
+
+```bash
+npm run dev:cli -- details --name <id> [--server ws://host:port]
+```
+
+`--name` (kortform `-n`) er påkrevd og må være en eksakt oppgave-id; en filtype
+som `arraysAndArrayMethods.ts` matcher altså ikke. Mangler `--name`, avslutter
+CLI-en med exit-kode 2; er id-en ukjent, svarer serveren `rejected`.
+
+```bash
+npm run dev:cli -- details --name arraysAndArrayMethods
+npm run dev:cli -- details -n csharpArrays --server ws://127.0.0.1:8080
+```
+
+### Hjelp
+
+`--help` (kortform `-h`, eller `help`) skriver ut en standardisert oversikt over
+alle kommandoene med argumentene deres, samt standardserveren CLI-en bruker:
+
+```bash
+npm run dev:cli -- --help
+```
+
 ### Installert CLI
 
 CLI-en heter `oppgavehjelper`. Den distribueres på to måter, begge bygget av
@@ -65,6 +112,9 @@ release-workflowen (se under):
 
   ```bash
   npx @johnkristianjobloop/oppgavehjelper <fil> [--assignment <id>] [--server ws://host:port]
+  npx @johnkristianjobloop/oppgavehjelper list [-l <språk>] [--server ws://host:port]
+  npx @johnkristianjobloop/oppgavehjelper details --name <id> [--server ws://host:port]
+  npx @johnkristianjobloop/oppgavehjelper --help
   ```
 
 - **Frittstående binærfiler** for Linux, macOS (arm64/x64) og Windows
@@ -140,10 +190,13 @@ packages/
     src/runner/JsTsRunner.ts + vitestEntry.ts   JS/TS via Vitest
     src/runner/CSharpRunner.ts + csharpSandbox.ts + csharp-template/   C# via dotnet + xUnit
     src/publish/   git-bundle-sandbox + publiseringsvalidering (verify, self-test, reload)
-  cli/         CLI for innsending + publisering, bygget med tsup til ett ESM-bunt
-    src/index.ts                CLI-entry: ruter "publish" → runPublish, ellers runSubmit
+  cli/         CLI for innsending + publisering + listing, bygget med tsup til ett ESM-bunt
+    src/index.ts                CLI-entry: ruter "--help" → runHelp, "publish" → runPublish, "list" → runList, "details" → runDetails, ellers runSubmit
+    src/models/help.ts          runHelp + standardisert kommandooversikt
     src/models/submit.ts        parseSubmitArgs + runSubmit + submitSolution()-bibliotek
     src/models/publish.ts       parsePublishArgs + runPublish + publishAssignment() + git-bundle
+    src/models/list.ts          parseListArgs + runList + listAssignments() + språkfilter
+    src/models/details.ts       parseDetailsArgs + runDetails + requestDetails() + eksakt-id-oppslag
     src/models/client.ts        delt WebSocket-strøm (send melding, yield serversvar)
     src/models/render.ts        språk-deteksjon fra filnavn + rendering av resultat/rapport
     src/models/globals.ts       defaults (server-URL) + terminal-meldingssett
@@ -157,8 +210,13 @@ assignments/   kjente oppgaver, én mappe per oppgave (assignment.json + testfil
 Lag en mappe under `assignments/<id>/` med:
 
 - `assignment.json`: `{ id, displayName, language, entry, testFile }` (+ valgfri
-  `reference` — en kjent-korrekt løsning brukt til self-test ved publisering)
+  `reference` — en kjent-korrekt løsning brukt til self-test ved publisering, og
+  valgfri `details` — en fritekst-beskrivelse som returneres av `details`-kommandoen)
 - en testfil som validerer løsningen
+
+`details`-feltet bør være instruktivt: oppgi forventet filnavn for innsendingen,
+funksjonsnavnene/signaturene testfilen forventer, og hva de skal gjøre. Eksport
+er valgfritt for JS/TS (settes inn automatisk), men kan med fordel anbefales.
 
 **JS/TS:** `language: "ts"` (eller `"js"`). Testfilen importerer løsningen via
 `entry` (f.eks. `./submission`). Deltakerens innsending skrives til

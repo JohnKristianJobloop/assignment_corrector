@@ -1,0 +1,9 @@
+{
+  "id": "csharpInterviewDesign",
+  "displayName": "C# Intervju 3 · Komposisjon og design",
+  "language": "cs",
+  "entry": "submission",
+  "testFile": "Tests.cs",
+  "reference": "Reference.cs",
+  "details": "Intervju-nivå (C#)\nKomposisjon og design\n\nInnsendingen skrives til Submission.cs og kompileres sammen med testfila. Du må selv definere den public kontrakten testfila refererer (ingen auto-public), og kan ikke bruke top-level statements.\n\nImplementer begge typene:\n\npublic static class Solution\n{\n    // Hvert intervall er [start, slutt] med start <= slutt. Slår sammen alle\n    // overlappende intervaller og returnerer resultatet sortert stigende på\n    // start. Intervaller som bare tangerer (f.eks. [1,2] og [2,3]) regnes som\n    // overlappende. Hvert intervall er et int-array med lengde 2.\n    public static int[][] MergeIntervals(int[][] intervals);\n}\n\n// En cache med fast kapasitet som kaster ut det minst nylig brukte elementet\n// når den er full. Både Get og Put teller som bruk.\npublic class LruCache\n{\n    public LruCache(int capacity);\n    public int Get(int key);          // verdien, eller -1 hvis nøkkelen mangler\n    public void Put(int key, int value);\n}"
+}

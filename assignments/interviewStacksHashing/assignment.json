@@ -1,0 +1,9 @@
+{
+  "id": "interviewStacksHashing",
+  "displayName": "Intervju 1 · Stack og hashing",
+  "language": "ts",
+  "entry": "submission",
+  "testFile": "interviewStacksHashing.test.ts",
+  "reference": "reference.ts",
+  "details": "Intervju-nivå\nStack og hashing\n\nLever inn en fil med navnet submission (submission.ts eller submission.js).\n\nDisse oppgavene ligger på nivå med tekniske intervju. Poenget er ikke nye begreper, men å velge riktig datastruktur og bruke det du kan i nye situasjoner.\n\nImplementer tre funksjoner:\n\n1. isBalanced(s: string): boolean\n   Returnerer true hvis alle parenteser i s er balansert og riktig nøstet. Gyldige tegn er (), [] og {}. Andre tegn skal ignoreres. isBalanced(\"(a[b]{c})\") gir true, isBalanced(\"(]\") gir false. Tom streng gir true. Tips: bruk en stack.\n\n2. twoSum(nums: number[], target: number): [number, number]\n   Returnerer indeksene [i, j] (i < j) til de to tallene som summerer til target. Finnes ingen, returner [-1, -1]. Du kan anta maks ett gyldig svar. Tips: ett gjennomløp med et hash-map.\n\n3. groupAnagrams(words: string[]): string[][]\n   Grupperer ord som er anagram av hverandre (samme bokstaver, ulik rekkefølge). Returner gruppene i den rekkefølgen den første forekomsten av hver gruppe dukker opp i words. Innen hver gruppe beholdes input-rekkefølgen. groupAnagrams([\"eat\",\"tea\",\"tan\",\"ate\"]) gir [[\"eat\",\"tea\",\"ate\"],[\"tan\"]].\n\nEksport er valgfritt (settes inn automatisk), men anbefalt."
+}

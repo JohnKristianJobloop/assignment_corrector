@@ -1,0 +1,9 @@
+{
+  "id": "csharpObjects",
+  "displayName": "C# 6 · Objekter",
+  "language": "cs",
+  "entry": "submission",
+  "testFile": "Tests.cs",
+  "reference": "Reference.cs",
+  "details": "Nivå 6 (C#)\nObjekter\n\nInnsendingen skrives til Submission.cs og kompileres sammen med testfila. Du må selv definere den public kontrakten testfila refererer (ingen auto-public), og kan ikke bruke top-level statements.\n\nDefiner en type Person med egenskapene Name (string) og Age (int). En record passer godt:\n\npublic record Person(string Name, int Age);\n\nImplementer klassen:\n\npublic static class Solution\n{\n    // Returnerer en ny Person med gitt navn og alder.\n    public static Person MakePerson(string name, int age);\n\n    // Returnerer true hvis personen er 18 år eller eldre.\n    public static bool IsAdult(Person person);\n\n    // Returnerer en NY Person der alderen er økt med 1. Den opprinnelige personen skal ikke endres.\n    public static Person Birthday(Person person);\n}"
+}

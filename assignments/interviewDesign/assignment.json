@@ -1,0 +1,9 @@
+{
+  "id": "interviewDesign",
+  "displayName": "Intervju 3 · Komposisjon og design",
+  "language": "ts",
+  "entry": "submission",
+  "testFile": "interviewDesign.test.ts",
+  "reference": "reference.ts",
+  "details": "Intervju-nivå\nKomposisjon og design\n\nLever inn en fil med navnet submission (submission.ts eller submission.js).\n\nHer kombinerer du sortering, komposisjon og en liten datastruktur du designer selv.\n\n1. mergeIntervals(intervals: [number, number][]): [number, number][]\n   Hvert intervall er [start, slutt] med start <= slutt. Slå sammen alle overlappende intervaller og returner resultatet sortert stigende på start. Intervaller som bare tangerer (f.eks. [1,2] og [2,3]) regnes som overlappende. mergeIntervals([[1,3],[2,6],[8,10],[15,18]]) gir [[1,6],[8,10],[15,18]].\n\n2. class LRUCache\n   En cache med fast kapasitet som kaster ut det minst nylig brukte elementet når den er full.\n     constructor(capacity: number)\n     get(key: number): number   // verdien, eller -1 hvis nøkkelen mangler\n     put(key: number, value: number): void\n   Både get og put teller som bruk. Når put gjør at antallet overstiger capacity, fjernes nøkkelen som lengst har vært ubrukt.\n\nEksport er valgfritt (settes inn automatisk), men anbefalt."
+}

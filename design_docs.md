@@ -78,7 +78,7 @@ assignment_corrector/
 │   ├── server/                 # runtime-server (JS/TS + C#)
 │   │   ├── src/createServer.ts # PROGRAMMATISK oppstart -> { url, close() } (efemer port for BDD)
 │   │   ├── src/index.ts        # tynn bin-wrapper: createServer() på env PORT
-│   │   ├── src/connection.ts   # håndterer én klientforbindelse / submit-flyt; velger runner per språk
+│   │   ├── src/connection.ts   # håndterer én klientforbindelse: submit / publish / list / details-flyt; velger runner per språk
 │   │   ├── src/registry.ts     # AssignmentRegistry: navn -> oppgave-metadata
 │   │   ├── src/normalizeExports.ts     # AST: setter export foran top-level deklarasjoner (JS/TS)
 │   │   ├── src/runner/Runner.ts        # språknøytralt interface
@@ -90,11 +90,15 @@ assignment_corrector/
 │   │   ├── src/runner/csharp-template/ # project.csproj (net10, xUnit) + Harness.cs (NDJSON)
 │   │   └── test/               # Vitest unit-tester (registry, sandbox, normalize, C#-parse)
 │   └── cli/                    # CLI-klient
-│       ├── src/client.ts       # BIBLIOTEK: submitSolution(opts): AsyncIterable<ServerMessage>
-│       └── src/index.ts        # tynn CLI-wrapper rundt client.ts
+│       ├── src/models/client.ts   # BIBLIOTEK: stream(server, msg, terminal): AsyncIterable<ServerMessage>
+│       ├── src/models/submit.ts   # submit-flyt: parseSubmitArgs + runSubmit + submitSolution()
+│       ├── src/models/publish.ts  # publish-flyt: parsePublishArgs + runPublish + git-bundle
+│       ├── src/models/list.ts     # list-flyt: parseListArgs + runList + språkfilter
+│       ├── src/models/details.ts  # details-flyt: parseDetailsArgs + runDetails + eksakt-id-oppslag
+│       └── src/index.ts        # tynn CLI-wrapper: ruter publish / list / details / submit
 └── assignments/                # kjente oppgaver, én mappe per oppgave
     ├── arraysAndArrayMethods/
-    │   ├── assignment.json     # { id, displayName, language, entry, testFile }
+    │   ├── assignment.json     # { id, displayName, language, entry, testFile, details? }
     │   └── arraysAndArrayMethods.test.ts
     └── csharpArrays/           # C#-eksempel
         ├── assignment.json     # { id, language: "cs", entry: "Submission", testFile: "Tests.cs" }
@@ -113,6 +117,11 @@ Runtime-nøytrale meldingstyper, importeres av både server og CLI.
     oppgave-id fra filnavnet og validerer mot registry.
   - `language` velger runner på serveren. Da C# ble lagt til vokste denne unionen med `"cs"`;
     alt annet i protokollen (og hele klientbiblioteket) var uendret.
+- `{ type: "list-assignments" }`: be om hele oppgaveregisteret. Serveren svarer med én
+  `assignments-list`. Filtrering på språk/filtype gjøres klient-side på det returnerte settet.
+- `{ type: "assignment-details-request", name: string }`: be om detaljene til én oppgave,
+  slått opp på **eksakt id** (`name`). Serveren svarer med én `assignment-details`, eller
+  `rejected` ved ukjent id.
 
 **Server -> Client** (streamet i rekkefølge)
 - `{ type: "accepted", assignment, total }`:  oppgave gjenkjent, validering starter
@@ -120,6 +129,10 @@ Runtime-nøytrale meldingstyper, importeres av både server og CLI.
 - `{ type: "test-result", name, status: "pass" | "fail", durationMs?, error?, expected?, actual? }`
 - `{ type: "report", correct: boolean, passed, failed, total }`: sluttrapport
 - `{ type: "error", message }`
+- `{ type: "assignments-list", assignments: AssignmentSummary[] }`: svar på `list-assignments`,
+  der `AssignmentSummary = { id, displayName?, language, testFile }`
+- `{ type: "assignment-details", id, displayName?, language, details? }`: svar på
+  `assignment-details-request`
 
 `TestResult` og `Report` defineres i `report.ts` og gjenbrukes på tvers.
 
@@ -131,13 +144,20 @@ Runtime-nøytrale meldingstyper, importeres av både server og CLI.
 - `createServer()` starter en `ws`-server programmatisk og returnerer `{ url, close() }`
   (efemer port når ingen er oppgitt. Gjør BDD-oppstart per scenario trivielt).
 - `index.ts` er en tynn bin-wrapper som kaller `createServer()` på env `PORT` (default 8080).
-- Per forbindelse: ta imot `submit`, kjør valideringsflyt, stream `ServerMessage`-er, lukk/hold åpen.
+- Per forbindelse: ta imot `submit`/`publish-assignment`/`list-assignments`/`assignment-details-request`,
+  kjør riktig flyt, stream `ServerMessage`-er, lukk/hold åpen. `list-assignments` og
+  `assignment-details-request` besvares synkront (`assignments-list` hhv. `assignment-details`,
+  ingen runner involvert).
 
 ### Assignment registry (`registry.ts`)
 - Leser `assignments/*/assignment.json` ved oppstart til et `Map<id, Assignment>`.
 - `resolve(filename)`: strip extension fra brukerens filnavn -> oppgave-id -> oppslag.
   Ukjent id ⇒ `rejected`. (Jf. Gherkin: "Server skal validere filnavn mot kjente oppgaver".)
-- `Assignment`: `{ id, displayName, language, entry, testFilePath, total? }`.
+- `get(id)`: eksakt oppslag på oppgave-id (ingen extension-stripping). Brukes av
+  `assignment-details-request`, der `--name` er en eksakt id.
+- `list()`: returnerer sorterte `AssignmentSummary`-er (`{ id, displayName?, language, testFile }`)
+  for `list-assignments`-flyten.
+- `Assignment`: `{ id, displayName, language, entry, testFilePath, details?, total? }`.
 
 ### Runner-abstraksjon (`runner/Runner.ts`)
 ```ts
@@ -214,12 +234,23 @@ per-runtime-server-modellen.
 
 Delt i to lag slik at BDD-stegene kan kalle klientlogikken direkte uten å spawne en prosess:
 
-- **`client.ts` (bibliotek):** `submitSolution(opts): AsyncIterable<ServerMessage>` kobler til
-  WebSocket, sender `submit`, og yield-er hver `ServerMessage` etter hvert som den kommer. Dette er
-  sømmen både CLI og Cucumber-steg bruker.
-- **`index.ts` (tynn CLI-wrapper):** `oppgaveretter <fil> [--assignment <id>] [--server ws://localhost:8080]`.
-  Leser fila, utleder `language` fra extension og default `assignment` fra filnavn, konsumerer
-  `submitSolution(...)`, skriver ✓/✗-linjer fortløpende + sluttrapport. Exit-kode 0 hvis `correct`, ellers 1.
+- **`client.ts` (bibliotek):** `stream(server, message, terminal): AsyncIterable<ServerMessage>` kobler til
+  WebSocket, sender én klientmelding, og yield-er hver `ServerMessage` til en terminal-melding.
+  `submitSolution`, `publishAssignment`, `listAssignments` og `requestDetails` er tynne innpakninger
+  rundt den. Dette er sømmen både CLI og Cucumber-steg bruker.
+- **`index.ts` (tynn CLI-wrapper):** ruter på første argument — `publish` → `runPublish`,
+  `list` → `runList`, `details` → `runDetails`, ellers `runSubmit`.
+  - **submit** (default): `oppgaveretter <fil> [--assignment <id>] [--server ws://host:port]`.
+    Leser fila, utleder `language` fra extension og default `assignment` fra filnavn, konsumerer
+    `submitSolution(...)`, skriver ✓/✗-linjer + sluttrapport. Exit-kode 0 hvis `correct`, ellers 1.
+  - **list** (`models/list.ts`): `oppgaveretter list [-l|--language <språk/filtype>] [--server ...]`.
+    Sender `list-assignments`, skriver ut id/språk/visningsnavn. `-l` filtrerer klient-side og godtar
+    språkkode (`ts`), filtype (`.ts`) eller filnavn (`foo.ts`), kommaseparert eller med gjentatt flagg;
+    ukjent verdi gir exit-kode 2.
+  - **details** (`models/details.ts`): `oppgaveretter details --name <id> [--server ...]`.
+    Sender `assignment-details-request` med eksakt id (`--name`/`-n`, også `--name=<id>`), skriver ut
+    visningsnavn/språk + `details`-teksten. Manglende `--name` gir exit-kode 2; ukjent id besvares med
+    `rejected`.
 
 ---
 

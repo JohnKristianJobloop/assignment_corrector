@@ -1,0 +1,15 @@
+export function add(a: number, b: number): number {
+  return a + b;
+}
+
+export function isEven(n: number): boolean {
+  return n % 2 === 0;
+}
+
+export function rectangleArea(bredde: number, hoyde: number): number {
+  return bredde * hoyde;
+}
+
+export function average(a: number, b: number, c: number): number {
+  return (a + b + c) / 3;
+}

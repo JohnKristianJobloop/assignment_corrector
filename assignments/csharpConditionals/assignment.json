@@ -1,0 +1,9 @@
+{
+  "id": "csharpConditionals",
+  "displayName": "C# 2 · Betingelser",
+  "language": "cs",
+  "entry": "submission",
+  "testFile": "Tests.cs",
+  "reference": "Reference.cs",
+  "details": "Nivå 2 (C#)\nBetingelser\n\nInnsendingen skrives til Submission.cs og kompileres sammen med testfila. Du må selv definere den public kontrakten testfila refererer (ingen auto-public), og kan ikke bruke top-level statements.\n\nImplementer klassen:\n\npublic static class Solution\n{\n    // Returnerer bokstavkarakter: 90+ gir \"A\", 80-89 \"B\", 70-79 \"C\", 60-69 \"D\", under 60 \"F\". Grensene er inkluderende.\n    public static string Grade(int score);\n\n    // Returnerer det største av de tre tallene.\n    public static int Largest(int a, int b, int c);\n}"
+}

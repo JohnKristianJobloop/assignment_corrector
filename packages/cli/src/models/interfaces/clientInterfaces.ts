@@ -31,3 +31,15 @@ export interface SubmitArgs {
   assignment?: string;
   server: string;
 }
+
+export interface ListArgs {
+  server: string;
+  /** Språk å filtrere på (tomt sett ⇒ vis alle). */
+  languages: Set<Language>;
+}
+
+export interface DetailsArgs {
+  server: string;
+  /** Eksakt oppgave-id å hente detaljer for. */
+  name: string;
+}
