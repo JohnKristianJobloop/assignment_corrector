@@ -44,7 +44,7 @@ jobs:
           SERVER_HOST: ${{ vars.SERVER_HOST }}
         run: |
           echo "$SERVER_HOST"
-          npm run build -w @johnkristianjobloop/oppgavehjelper
+          npm run build -w @johnkjobloop/oppgavehjelper
 
           if [ -z "$SERVER_HOST" ]; then
             DEFINE_SERVER_HOST="undefined"

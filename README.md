@@ -107,14 +107,14 @@ npm run dev:cli -- --help
 CLI-en heter `oppgavehjelper`. Den distribueres på to måter, begge bygget av
 release-workflowen (se under):
 
-- **npm-pakke** `@johnkristianjobloop/oppgavehjelper` (GitHub Packages), med protokollen
+- **npm-pakke** `@johnkjobloop/oppgavehjelper` (npm Packages), med protokollen
   bundlet inn, så den kjører frittstående uten repoet:
 
   ```bash
-  npx @johnkristianjobloop/oppgavehjelper <fil> [--assignment <id>] [--server ws://host:port]
-  npx @johnkristianjobloop/oppgavehjelper list [-l <språk>] [--server ws://host:port]
-  npx @johnkristianjobloop/oppgavehjelper details --name <id> [--server ws://host:port]
-  npx @johnkristianjobloop/oppgavehjelper --help
+  npx @johnkjobloop/oppgavehjelper list [-l <språk>] [--server ws://host:port]
+  npx @johnkjobloop/oppgavehjelper details --name <id> [--server ws://host:port]
+  npx @johnkjobloop/oppgavehjelper --help
+  npx @johnkjobloop/oppgavehjelper <fil> [--assignment <id>] [--server ws://host:port]
   ```
 
 - **Frittstående binærfiler** for Linux, macOS (arm64/x64) og Windows
