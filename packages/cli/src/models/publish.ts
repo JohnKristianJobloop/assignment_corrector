@@ -4,8 +4,9 @@ import { DEFAULT_SERVER, PUBLISH_TERMINAL } from "./globals";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { AcceptedMessage, RejectedMessage, TestResultMessage, ReportMessage, ErrorMessage, ServerMessage } from "@oppgaveretter/protocol";
+import { ServerMessage } from "@oppgaveretter/protocol";
 import { stream } from "./client";
+import { renderResult } from "./render";
 
 export function parsePublishArgs(argv: string[]): PublishArgs {
   let repo: string | undefined;
@@ -90,9 +91,6 @@ export async function runPublish(argv: string[]): Promise<number> {
     }
   }
   return published ? 0 : 1;
-}
-function renderResult(msg: AcceptedMessage | RejectedMessage | TestResultMessage | ReportMessage | ErrorMessage) {
-  if (msg.type === "error") console.error(msg.message);
 }
 
 export function publishAssignment(
