@@ -102,9 +102,6 @@ jobs:
             "files": [
               "bin"
             ],
-            "publishConfig": {
-              "registry": "https://npm.pkg.github.com"
-            },
             "repository": {
               "type": "git",
               "url": "git+https://github.com/${GITHUB_REPOSITORY}.git"
@@ -120,6 +117,19 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js for npm registry
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          scope: "@johnkristianjobloop"
+
+      - name: Publish package to npm registry
+        working-directory: package
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
