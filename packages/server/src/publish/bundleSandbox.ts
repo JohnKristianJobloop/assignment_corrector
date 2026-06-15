@@ -85,13 +85,31 @@ export async function extractBundle(
 
   try {
     const bundlePath = path.join(dir, "repo.bundle");
+    const verifyDir = path.join(dir, "verify.git");
     const bareDir = path.join(dir, "bare.git");
     const workDir = path.join(dir, "work");
     const tarPath = path.join(dir, "head.tar");
     await writeFile(bundlePath, bundle);
     await mkdir(workDir, { recursive: true });
 
-    const verify = await git(dir, ["bundle", "verify", bundlePath]);
+    // `git bundle verify` MÅ kjøres mot et repository (det sjekker bunten sine
+    // prerequisites mot repoet). Uten et eksplisitt repo leter git oppover etter
+    // en `.git`: lokalt finner den serverens eget kild-repo, men i container-
+    // imaget (ingen `.git`) feiler den med «need a repository to verify a
+    // bundle». Vi forankrer derfor verify mot et tomt engangs-bare-repo.
+    const initVerifyRepo = await git(dir, ["init", "--bare", "-q", verifyDir]);
+    if (initVerifyRepo.code !== 0) {
+      throw new Error(
+        `Kunne ikke initialisere verify-repo: ${initVerifyRepo.stderr.trim()}`,
+      );
+    }
+
+    const verify = await git(dir, [
+      `--git-dir=${verifyDir}`,
+      "bundle",
+      "verify",
+      bundlePath,
+    ]);
     if (verify.code !== 0) {
       throw new BundleError(
         `Ugyldig git bundle: ${verify.stderr.trim() || "verify feilet"}`,
