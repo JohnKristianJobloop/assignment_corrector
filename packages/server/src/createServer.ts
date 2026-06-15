@@ -43,7 +43,11 @@ export async function createServer(
     (opts.runner
       ? [opts.runner]
       : [new JsTsRunner(projectRoot), new CSharpRunner(projectRoot)]);
-  const publishToken = opts.publishToken ?? process.env.PUBLISH_TOKEN;
+  // `.trim()` så et limt inn token-miljø med usynlig etterstilt linjeskift/
+  // mellomrom (vanlig i Render/Docker-dashboards) fortsatt matcher klientens
+  // token. Tom etter trim ⇒ undefined ⇒ publisering av.
+  const publishToken =
+    (opts.publishToken ?? process.env.PUBLISH_TOKEN)?.trim() || undefined;
 
   // HTTP-server med helsesjekk-endepunkt. Render (web service) krever en åpen
   // HTTP-port som svarer 200 for å regne tjenesten som frisk; uten dette blir
