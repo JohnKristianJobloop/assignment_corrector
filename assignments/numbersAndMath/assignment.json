@@ -5,5 +5,5 @@
   "entry": "submission",
   "testFile": "numbersAndMath.test.ts",
   "reference": "reference.ts",
-  "details": "Nivå 2\nTall og regning\n\nLever inn en fil med navnet submission (submission.ts eller submission.js).\n\nImplementer fire funksjoner:\n\n1. add(a: number, b: number): number\n   Returnerer summen av de to tallene.\n\n2. isEven(n: number): boolean\n   Returnerer true hvis tallet er et partall, ellers false. 0 regnes som partall.\n\n3. rectangleArea(bredde: number, hoyde: number): number\n   Returnerer arealet av et rektangel (bredde ganger høyde).\n\n4. average(a: number, b: number, c: number): number\n   Returnerer gjennomsnittet av de tre tallene.\n\nEksport er valgfritt (settes inn automatisk), men anbefalt."
+  "details": "Nivå 2\nTall og regning\n\nLever inn en fil med navnet numbersAndMath (numbersAndMath.ts eller numbersAndMath.js).\n\nImplementer fire funksjoner:\n\n1. add(a: number, b: number): number\n   Returnerer summen av de to tallene.\n\n2. isEven(n: number): boolean\n   Returnerer true hvis tallet er et partall, ellers false. 0 regnes som partall.\n\n3. rectangleArea(bredde: number, hoyde: number): number\n   Returnerer arealet av et rektangel (bredde ganger høyde).\n\n4. average(a: number, b: number, c: number): number\n   Returnerer gjennomsnittet av de tre tallene."
 }

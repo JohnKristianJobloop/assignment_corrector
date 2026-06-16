@@ -5,5 +5,5 @@
   "entry": "submission",
   "testFile": "Tests.cs",
   "reference": "Reference.cs",
-  "details": "Nivå 1 (C#)\nGrunnleggende\n\nInnsendingen skrives til Submission.cs og kompileres sammen med testfila. Du må selv definere den public kontrakten testfila refererer (ingen auto-public), og kan ikke bruke top-level statements.\n\nImplementer klassen:\n\npublic static class Solution\n{\n    // Returnerer \"Hei, <name>!\". Greet(\"Ada\") gir \"Hei, Ada!\".\n    public static string Greet(string name);\n\n    // Returnerer summen av a og b.\n    public static int Add(int a, int b);\n\n    // Returnerer true hvis n er et partall, ellers false.\n    public static bool IsEven(int n);\n}"
+  "details": "Nivå 1 (C#)\nGrunnleggende\n\nInnsendingen skrives til csharpBasics.cs. Du må selv definere den public kontrakten til klassen din (hva skal være public), og kan ikke bruke top-level statements.\n\nNedenfor er et forslag for hvordan klassen bør se ut.\n\nImplementer klassen:\n\npublic static class Solution\n{\n    // Returnerer \"Hei, <name>!\". Greet(\"Ada\") gir \"Hei, Ada!\".\n    public static string Greet(string name);\n\n    // Returnerer summen av a og b.\n    public static int Add(int a, int b);\n\n    // Returnerer true hvis n er et partall, ellers false.\n    public static bool IsEven(int n);\n}"
 }

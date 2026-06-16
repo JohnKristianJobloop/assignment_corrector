@@ -5,5 +5,5 @@
   "entry": "submission",
   "testFile": "objectsAndRecords.test.ts",
   "reference": "reference.ts",
-  "details": "Nivå 6\nObjekter\n\nLever inn en fil med navnet submission (submission.ts eller submission.js).\n\nEn person er et objekt på formen { navn: string, alder: number }.\n\nImplementer tre funksjoner:\n\n1. makePerson(navn: string, alder: number): Person\n   Returnerer et nytt person-objekt med feltene navn og alder.\n\n2. isAdult(person: Person): boolean\n   Returnerer true hvis personen er 18 år eller eldre, ellers false.\n\n3. birthday(person: Person): Person\n   Returnerer et NYTT person-objekt der alder er økt med 1. Det opprinnelige objektet skal ikke endres.\n\nEksport er valgfritt (settes inn automatisk), men anbefalt."
+  "details": "Nivå 6\nObjekter\n\nLever inn en fil med navnet objectsAndRecords (objectsAndRecords.ts eller objectsAndRecords.js).\n\nEn person er et objekt på formen { navn: string, alder: number }.\n\nImplementer tre funksjoner:\n\n1. makePerson(navn: string, alder: number): Person\n   Returnerer et nytt person-objekt med feltene navn og alder.\n\n2. isAdult(person: Person): boolean\n   Returnerer true hvis personen er 18 år eller eldre, ellers false.\n\n3. birthday(person: Person): Person\n   Returnerer et NYTT person-objekt der alder er økt med 1. Det opprinnelige objektet skal ikke endres."
 }

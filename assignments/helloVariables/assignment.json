@@ -5,5 +5,5 @@
   "entry": "submission",
   "testFile": "helloVariables.test.ts",
   "reference": "reference.ts",
-  "details": "Nivå 1\nVariabler og strenger\n\nLever inn en fil med navnet submission (submission.ts eller submission.js).\n\nImplementer tre funksjoner:\n\n1. greet(navn: string): string\n   Returnerer en hilsen på formen \"Hei, <navn>!\". greet(\"Ada\") gir \"Hei, Ada!\".\n\n2. fullName(fornavn: string, etternavn: string): string\n   Setter sammen fornavn og etternavn med ett mellomrom mellom. fullName(\"Ada\", \"Lovelace\") gir \"Ada Lovelace\".\n\n3. shout(tekst: string): string\n   Returnerer teksten i STORE bokstaver med ett utropstegn til slutt. shout(\"hei\") gir \"HEI!\".\n\nEksport er valgfritt (settes inn automatisk), men anbefalt."
+  "details": "Nivå 1\nVariabler og strenger\n\nLever inn en fil med navnet helloVariables (helloVariables.ts eller helloVariables.js).\n\nImplementer tre funksjoner:\n\n1. greet(navn: string): string\n   Returnerer en hilsen på formen \"Hei, <navn>!\". greet(\"Ada\") gir \"Hei, Ada!\".\n\n2. fullName(fornavn: string, etternavn: string): string\n   Setter sammen fornavn og etternavn med ett mellomrom mellom. fullName(\"Ada\", \"Lovelace\") gir \"Ada Lovelace\".\n\n3. shout(tekst: string): string\n   Returnerer teksten i STORE bokstaver med ett utropstegn til slutt. shout(\"hei\") gir \"HEI!\"."
 }
